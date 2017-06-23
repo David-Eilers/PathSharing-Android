@@ -3,6 +3,8 @@ package com.example.eloy.project24app;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -79,17 +81,15 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
+        android.app.FragmentManager fragmanager = getFragmentManager();
 
-        if (id == R.id.nav_profile) {
-            // Handle the camera action
-        } else if (id == R.id.nav_groups) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        if (id == R.id.nav_groups_layout) {
+            fragmanager.beginTransaction().replace(R.id.content_frame, new GroupsFragment()).commit();
+        } else if (id == R.id.nav_profile_layout) {
+            fragmanager.beginTransaction().replace(R.id.content_frame, new ProfileFragment()).commit();
+        } else if (id == R.id.nav_about_layout) {
+            fragmanager.beginTransaction().replace(R.id.content_frame, new AboutFragment()).commit();
         }
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
