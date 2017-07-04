@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 /**
  * Created by Eloy on 23-6-2017.
@@ -14,6 +15,8 @@ import android.view.ViewGroup;
 public class AboutFragment extends Fragment {
 
     View view;
+
+
 
     @Nullable
     @Override

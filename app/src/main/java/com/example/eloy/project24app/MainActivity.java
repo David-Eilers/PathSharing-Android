@@ -1,10 +1,12 @@
 package com.example.eloy.project24app;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.text.Layout;
 import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -23,52 +25,59 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import static java.security.AccessController.getContext;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     RequestQueue requestQueue;
     TextView results;
-    String JsonURL = "http://10.0.2.2:5000/";
-    String data = "";
+    String JsonURL = "http://10.0.2.2:5000/about";
+    String string = "";
+
+    GroupsFragment groupsFragment = new GroupsFragment();
+    ProfileFragment profileFragment = new ProfileFragment();
+    AboutFragment aboutFragment = new AboutFragment();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //creeer request queue
         requestQueue = Volley.newRequestQueue(this);
-        //zet resultaat in een textview (op de about page)
-        results = (TextView) findViewById(R.id.testtext);
 
-        JsonObjectRequest jsonRequest = new JsonObjectRequest(Request.Method.GET, JsonURL+"user",
-                // The third parameter Listener overrides the method onResponse() and passes
-                //JSONObject as a parameter
-                new Response.Listener<JSONObject>() {
+        setContentView(findViewById(R.id.about_layout));
+        results = (TextView) findViewById(R.id.aboutText);
 
-                    // Takes the response from the JSON request
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, JsonURL,
+
+                new Response.Listener<String>() {
+
                     @Override
-                    public void onResponse(JSONObject response) {
-                        Log.d("Response", response.toString());
+                    public void onResponse(String response) {
+                        Log.d("Response", response.getClass().getName());
                         try {
-                            JSONObject obj = response;
-                            // Retrieves the string labeled "colorName" and "description" from
-                            //the response JSON Object
-                            //and converts them into javascript objects
-                            String username = obj.getString("username");
-                            String email = obj.getString("email");
+                            JSONObject obj = new JSONObject(response);
+                            Log.d("Response", "obj geen exception");
 
-                            data = "Het werkt";
+                            String message = obj.getString("message:");
+                            Log.d("Response", "getString message geen exception");
+                            Log.d("Message: ", message);
+
+
+                            string = message;
+                            Log.d("String", string);
 
                             /*
                             data += "Username: " + username +
                                     "Email: " + email;
                             */
-                            results.setText(data);
+                            results.setText(string);
                         }
                         catch (JSONException e) {
                             Log.e("Volley", "Error "+e);
@@ -84,9 +93,9 @@ public class MainActivity extends AppCompatActivity
                 }
         );
 
-        jsonRequest.setRetryPolicy(new DefaultRetryPolicy( 50000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        stringRequest.setRetryPolicy(new DefaultRetryPolicy( 50000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
-        requestQueue.add(jsonRequest);
+        requestQueue.add(stringRequest);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -150,11 +159,11 @@ public class MainActivity extends AppCompatActivity
         android.app.FragmentManager fragmanager = getFragmentManager();
 
         if (id == R.id.nav_groups_layout) {
-            fragmanager.beginTransaction().replace(R.id.content_frame, new GroupsFragment()).commit();
+            fragmanager.beginTransaction().replace(R.id.content_frame, groupsFragment).commit();
         } else if (id == R.id.nav_profile_layout) {
-            fragmanager.beginTransaction().replace(R.id.content_frame, new ProfileFragment()).commit();
+            fragmanager.beginTransaction().replace(R.id.content_frame, profileFragment).commit();
         } else if (id == R.id.nav_about_layout) {
-            fragmanager.beginTransaction().replace(R.id.content_frame, new AboutFragment()).commit();
+            fragmanager.beginTransaction().replace(R.id.content_frame, aboutFragment).commit();
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
