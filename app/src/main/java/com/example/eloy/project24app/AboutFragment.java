@@ -15,13 +15,16 @@ import android.widget.TextView;
 public class AboutFragment extends Fragment {
 
     View view;
-
+    String string;
 
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.about_layout, container,false);
+        string = this.getArguments().getString("text");
+        TextView text = (TextView) container.findViewById(R.id.aboutText);
+        text.setText(string);
         return view;
     }
 }

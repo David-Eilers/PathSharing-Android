@@ -39,7 +39,8 @@ public class MainActivity extends AppCompatActivity
     RequestQueue requestQueue;
     TextView results;
     String JsonURL = "http://10.0.2.2:5000/about";
-    String string = "";
+    String string = "jammer ja";
+    Bundle bundle = new Bundle();
 
     GroupsFragment groupsFragment = new GroupsFragment();
     ProfileFragment profileFragment = new ProfileFragment();
@@ -51,8 +52,6 @@ public class MainActivity extends AppCompatActivity
 
         requestQueue = Volley.newRequestQueue(this);
 
-        setContentView(findViewById(R.id.about_layout));
-        results = (TextView) findViewById(R.id.aboutText);
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET, JsonURL,
 
@@ -77,7 +76,7 @@ public class MainActivity extends AppCompatActivity
                             data += "Username: " + username +
                                     "Email: " + email;
                             */
-                            results.setText(string);
+                            bundle.putString("text",string);
                         }
                         catch (JSONException e) {
                             Log.e("Volley", "Error "+e);
@@ -92,6 +91,8 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
         );
+
+        bundle.putString("text",string);
 
         stringRequest.setRetryPolicy(new DefaultRetryPolicy( 50000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
@@ -159,10 +160,12 @@ public class MainActivity extends AppCompatActivity
         android.app.FragmentManager fragmanager = getFragmentManager();
 
         if (id == R.id.nav_groups_layout) {
+
             fragmanager.beginTransaction().replace(R.id.content_frame, groupsFragment).commit();
         } else if (id == R.id.nav_profile_layout) {
             fragmanager.beginTransaction().replace(R.id.content_frame, profileFragment).commit();
         } else if (id == R.id.nav_about_layout) {
+            aboutFragment.setArguments(bundle);
             fragmanager.beginTransaction().replace(R.id.content_frame, aboutFragment).commit();
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
