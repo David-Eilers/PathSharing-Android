@@ -5,6 +5,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -14,14 +15,79 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
+
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    RequestQueue requestQueue;
+    TextView results;
+    String JsonURL = "http://10.0.2.2:5000/";
+    String data = "";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //creeer request queue
+        requestQueue = Volley.newRequestQueue(this);
+        //zet resultaat in een textview (op de about page)
+        results = (TextView) findViewById(R.id.testtext);
+
+        JsonObjectRequest jsonRequest = new JsonObjectRequest(Request.Method.GET, JsonURL+"user",
+                // The third parameter Listener overrides the method onResponse() and passes
+                //JSONObject as a parameter
+                new Response.Listener<JSONObject>() {
+
+                    // Takes the response from the JSON request
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d("Response", response.toString());
+                        try {
+                            JSONObject obj = response;
+                            // Retrieves the string labeled "colorName" and "description" from
+                            //the response JSON Object
+                            //and converts them into javascript objects
+                            String username = obj.getString("username");
+                            String email = obj.getString("email");
+
+                            data = "Het werkt";
+
+                            /*
+                            data += "Username: " + username +
+                                    "Email: " + email;
+                            */
+                            results.setText(data);
+                        }
+                        catch (JSONException e) {
+                            Log.e("Volley", "Error "+e);
+                        }
+                    }
+                },
+
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("Volley", "Error"+ error);
+                    }
+                }
+        );
+
+        jsonRequest.setRetryPolicy(new DefaultRetryPolicy( 50000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        requestQueue.add(jsonRequest);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
