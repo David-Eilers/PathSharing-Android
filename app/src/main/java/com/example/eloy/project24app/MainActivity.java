@@ -38,13 +38,14 @@ public class MainActivity extends AppCompatActivity
 
     RequestQueue requestQueue;
     TextView results;
-    String JsonURL = "http://10.0.2.2:5000/about";
-    String string = "jammer ja";
+    String JsonURL = "http://10.0.2.2:5000/";
     Bundle bundle = new Bundle();
 
     GroupsFragment groupsFragment = new GroupsFragment();
     ProfileFragment profileFragment = new ProfileFragment();
     AboutFragment aboutFragment = new AboutFragment();
+
+    android.app.FragmentManager fragmanager = getFragmentManager();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,31 +53,26 @@ public class MainActivity extends AppCompatActivity
 
         requestQueue = Volley.newRequestQueue(this);
 
+        //StringRequest voor de about pagina
 
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, JsonURL,
+        StringRequest aboutRequest = new StringRequest(Request.Method.GET, JsonURL+"about",
 
                 new Response.Listener<String>() {
 
                     @Override
                     public void onResponse(String response) {
-                        Log.d("Response", response.getClass().getName());
+                        Log.d("Response", response);
                         try {
                             JSONObject obj = new JSONObject(response);
-                            Log.d("Response", "obj geen exception");
 
                             String message = obj.getString("message:");
-                            Log.d("Response", "getString message geen exception");
                             Log.d("Message: ", message);
 
 
-                            string = message;
-                            Log.d("String", string);
 
-                            /*
-                            data += "Username: " + username +
-                                    "Email: " + email;
-                            */
-                            bundle.putString("text",string);
+                            Log.d("String", message);
+
+                            bundle.putString("aboutMessage",message);
                         }
                         catch (JSONException e) {
                             Log.e("Volley", "Error "+e);
@@ -86,17 +82,95 @@ public class MainActivity extends AppCompatActivity
 
                 new Response.ErrorListener() {
                     @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e("Volley", "Error"+ error);
+                    public void onErrorResponse(VolleyError e) {
+                        Log.e("Volley", "Error"+ e);
                     }
                 }
         );
 
-        bundle.putString("text",string);
+        //StringRequest voor de profiel pagina
 
-        stringRequest.setRetryPolicy(new DefaultRetryPolicy( 50000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        StringRequest profileRequest = new StringRequest(Request.Method.GET, JsonURL+"user",
 
-        requestQueue.add(stringRequest);
+                new Response.Listener<String>() {
+
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d("Response", response);
+                        try {
+                            JSONObject obj = new JSONObject(response);
+
+                            String username = obj.getString("username:");
+                            String email = obj.getString("email:");
+
+                            Log.d("Username: ", username);
+                            Log.d("Email: ", email);
+
+                            bundle.putString("username",username);
+                            bundle.putString("email", email);
+                        }
+                        catch (JSONException e) {
+                            Log.e("Volley", "Error "+e);
+                        }
+                    }
+                },
+
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError e) {
+                        Log.e("Volley", "Error"+ e);
+                    }
+                }
+        );
+
+        //StringRequest voor de groepen pagina
+
+        StringRequest groupsRequest = new StringRequest(Request.Method.GET, JsonURL+"groups/10",
+
+                new Response.Listener<String>() {
+
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d("Response", response);
+                        try {
+                            JSONObject obj = new JSONObject(response);
+
+                            String description = obj.getString("Description:");
+                            String groupname = obj.getString("Group name:");
+
+
+
+                            Log.d("groupname: ", groupname);
+                            Log.d("description: ", description);
+
+                            bundle.putString("groupname",groupname);
+                            bundle.putString("description", description);
+                            //bundle.putString("groups", response);
+                        }
+                        catch (JSONException e) {
+                            Log.e("Volley", "Error "+e);
+                        }
+                    }
+                },
+
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError e) {
+                        Log.e("Volley", "Error"+ e);
+                    }
+                }
+        );
+
+
+
+
+        aboutRequest.setRetryPolicy(new DefaultRetryPolicy( 50000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        requestQueue.add(aboutRequest);
+        requestQueue.add(profileRequest);
+        requestQueue.add(groupsRequest);
+
+        //groupsFragment.setArguments(bundle);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -118,6 +192,8 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        //fragmanager.beginTransaction().replace(R.id.content_frame, groupsFragment).commit();
     }
 
     @Override
@@ -157,13 +233,13 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-        android.app.FragmentManager fragmanager = getFragmentManager();
 
         if (id == R.id.nav_groups_layout) {
-
+            groupsFragment.setArguments(bundle);
             fragmanager.beginTransaction().replace(R.id.content_frame, groupsFragment).commit();
         } else if (id == R.id.nav_profile_layout) {
             fragmanager.beginTransaction().replace(R.id.content_frame, profileFragment).commit();
+            profileFragment.setArguments(bundle);
         } else if (id == R.id.nav_about_layout) {
             aboutFragment.setArguments(bundle);
             fragmanager.beginTransaction().replace(R.id.content_frame, aboutFragment).commit();

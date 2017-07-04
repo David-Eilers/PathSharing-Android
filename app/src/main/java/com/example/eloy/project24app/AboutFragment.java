@@ -22,8 +22,8 @@ public class AboutFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.about_layout, container,false);
-        string = this.getArguments().getString("text");
-        TextView text = (TextView) container.findViewById(R.id.aboutText);
+        string = this.getArguments().getString("aboutMessage");
+        TextView text = (TextView) view.findViewById(R.id.aboutText);
         text.setText(string);
         return view;
     }
