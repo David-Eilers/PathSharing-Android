@@ -1,4 +1,4 @@
-package com.example.eloy.project24app;
+package com.example.eloy.project24app.fragments;
 
 import android.app.Fragment;
 import android.os.Bundle;
@@ -7,6 +7,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.example.eloy.project24app.R;
 
 /**
  * Created by Eloy on 23-6-2017.

@@ -1,12 +1,8 @@
 package com.example.eloy.project24app;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.text.Layout;
 import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -24,21 +20,19 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.eloy.project24app.fragments.AboutFragment;
+import com.example.eloy.project24app.fragments.GroupsFragment;
+import com.example.eloy.project24app.fragments.ProfileFragment;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import static java.security.AccessController.getContext;
-
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    RequestQueue requestQueue;
     TextView results;
-    String JsonURL = "http://10.0.2.2:5000/";
     Bundle bundle = new Bundle();
 
     GroupsFragment groupsFragment = new GroupsFragment();
@@ -51,124 +45,18 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        requestQueue = Volley.newRequestQueue(this);
+        Connection.getContext(this);
 
         //StringRequest voor de about pagina
 
-        StringRequest aboutRequest = new StringRequest(Request.Method.GET, JsonURL+"about",
 
-                new Response.Listener<String>() {
-
-                    @Override
-                    public void onResponse(String response) {
-                        Log.d("Response", response);
-                        try {
-                            JSONObject obj = new JSONObject(response);
-
-                            String message = obj.getString("message:");
-                            Log.d("Message: ", message);
-
-
-
-                            Log.d("String", message);
-
-                            bundle.putString("aboutMessage",message);
-                        }
-                        catch (JSONException e) {
-                            Log.e("Volley", "Error "+e);
-                        }
-                    }
-                },
-
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError e) {
-                        Log.e("Volley", "Error"+ e);
-                    }
-                }
-        );
 
         //StringRequest voor de profiel pagina
 
-        StringRequest profileRequest = new StringRequest(Request.Method.GET, JsonURL+"user",
 
-                new Response.Listener<String>() {
-
-                    @Override
-                    public void onResponse(String response) {
-                        Log.d("Response", response);
-                        try {
-                            JSONObject obj = new JSONObject(response);
-
-                            String username = obj.getString("username:");
-                            String email = obj.getString("email:");
-
-                            Log.d("Username: ", username);
-                            Log.d("Email: ", email);
-
-                            bundle.putString("username",username);
-                            bundle.putString("email", email);
-                        }
-                        catch (JSONException e) {
-                            Log.e("Volley", "Error "+e);
-                        }
-                    }
-                },
-
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError e) {
-                        Log.e("Volley", "Error"+ e);
-                    }
-                }
-        );
 
         //StringRequest voor de groepen pagina
 
-        StringRequest groupsRequest = new StringRequest(Request.Method.GET, JsonURL+"groups/10",
-
-                new Response.Listener<String>() {
-
-                    @Override
-                    public void onResponse(String response) {
-                        Log.d("Response", response);
-                        try {
-                            JSONObject obj = new JSONObject(response);
-
-                            String description = obj.getString("Description:");
-                            String groupname = obj.getString("Group name:");
-
-
-
-                            Log.d("groupname: ", groupname);
-                            Log.d("description: ", description);
-
-                            bundle.putString("groupname",groupname);
-                            bundle.putString("description", description);
-                            //bundle.putString("groups", response);
-                        }
-                        catch (JSONException e) {
-                            Log.e("Volley", "Error "+e);
-                        }
-                    }
-                },
-
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError e) {
-                        Log.e("Volley", "Error"+ e);
-                    }
-                }
-        );
-
-
-
-
-        aboutRequest.setRetryPolicy(new DefaultRetryPolicy( 50000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-        requestQueue.add(aboutRequest);
-        requestQueue.add(profileRequest);
-        requestQueue.add(groupsRequest);
 
         //groupsFragment.setArguments(bundle);
 
@@ -235,12 +123,16 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_groups_layout) {
+            bundle.putStringArrayList("groups",Connection.getGroups());
+            Log.d("Bundel waarde", bundle.toString());
             groupsFragment.setArguments(bundle);
             fragmanager.beginTransaction().replace(R.id.content_frame, groupsFragment).commit();
         } else if (id == R.id.nav_profile_layout) {
+            bundle.putStringArrayList("profile",Connection.getProfile());
             fragmanager.beginTransaction().replace(R.id.content_frame, profileFragment).commit();
             profileFragment.setArguments(bundle);
         } else if (id == R.id.nav_about_layout) {
+            bundle.putStringArrayList("about",Connection.getAbout());
             aboutFragment.setArguments(bundle);
             fragmanager.beginTransaction().replace(R.id.content_frame, aboutFragment).commit();
         }
