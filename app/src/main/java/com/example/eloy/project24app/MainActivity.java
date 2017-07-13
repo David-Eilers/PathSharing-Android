@@ -1,6 +1,9 @@
 package com.example.eloy.project24app;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Looper;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
@@ -13,6 +16,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -22,6 +27,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.eloy.project24app.controllers.LoginHandler;
 import com.example.eloy.project24app.fragments.AboutFragment;
 import com.example.eloy.project24app.fragments.GroupsFragment;
 import com.example.eloy.project24app.fragments.ProfileFragment;
@@ -29,114 +35,65 @@ import com.example.eloy.project24app.fragments.ProfileFragment;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.logging.Handler;
 
-    Connection connection;
-    Bundle bundle = new Bundle();
+public class MainActivity extends AppCompatActivity {
+    private static EditText usernameField;
+    private static EditText passwordField;
+    private static Context context;
+    private static JSONObject token;
 
-    GroupsFragment groupsFragment = new GroupsFragment();
-    ProfileFragment profileFragment = new ProfileFragment();
-    AboutFragment aboutFragment = new AboutFragment();
 
-    android.app.FragmentManager fragmanager = getFragmentManager();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        connection = new Connection(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        //StringRequest voor de about pagina
-
+        setContentView(R.layout.login_layout);
+        context = this;
 
 
-        //StringRequest voor de profiel pagina
+        usernameField = (EditText) findViewById(R.id.login_username);
+        passwordField = (EditText) findViewById(R.id.login_password);
+        Button login = (Button) findViewById(R.id.login_button);
+        Button register = (Button) findViewById(R.id.register_button);
 
-
-
-        //StringRequest voor de groepen pagina
-
-
-        //groupsFragment.setArguments(bundle);
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        login.setOnClickListener(new View.OnClickListener(){
             @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+            public void onClick(View view){
+                LoginHandler login = new LoginHandler(usernameField.getText().toString(), passwordField.getText().toString(), context);
+                Thread t = new Thread(){
+                    public void run(){
+                        try {
+                            Thread.sleep(2000);
+                            token = LoginHandler.getToken();
+                            Log.d("Token Main",token.toString());
+                            Looper.prepare();
+                            createDrawer();
+                            //TODO
+                        } catch (Exception e){
+                            Log.e("Token", "Error: Couldn't log in " + e);
+                        }
+                    }
+                };
+                t.start();
+
             }
         });
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
+        register.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //TODO
+            }
+        });
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-
-        //fragmanager.beginTransaction().replace(R.id.content_frame, groupsFragment).commit();
     }
 
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
+    public static void createDrawer(){
+        new Drawer();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.nav_groups_layout) {
-            bundle.putStringArrayList("groups",connection.getGroups());
-            Log.d("Bundel waarde", bundle.toString());
-            groupsFragment.setArguments(bundle);
-            fragmanager.beginTransaction().replace(R.id.content_frame, groupsFragment).commit();
-        } else if (id == R.id.nav_profile_layout) {
-            bundle.putStringArrayList("profile",connection.getProfile());
-            fragmanager.beginTransaction().replace(R.id.content_frame, profileFragment).commit();
-            profileFragment.setArguments(bundle);
-        } else if (id == R.id.nav_about_layout) {
-            bundle.putStringArrayList("about",connection.getAbout());
-            aboutFragment.setArguments(bundle);
-            fragmanager.beginTransaction().replace(R.id.content_frame, aboutFragment).commit();
-        }
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
-    }
 }

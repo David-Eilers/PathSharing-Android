@@ -31,12 +31,17 @@ public class Connection extends Thread{
     private static String JsonURL = "http://10.0.2.2:5000/";
     private static RequestQueue requestQueue;
     private static ArrayList<String> array;
+
     private static String aboutMessage;
+    private static String username;
+    private static String email;
+    private static String groupname;
+    private static String description;
 
     public Connection(Context context){
         requestQueue = Volley.newRequestQueue(context);
 
-        final StringRequest aboutRequest = new StringRequest(Request.Method.GET, JsonURL+"about",
+         StringRequest aboutRequest = new StringRequest(Request.Method.GET, JsonURL+"about",
 
                 new Response.Listener<String>() {
 
@@ -47,12 +52,6 @@ public class Connection extends Thread{
                             JSONObject obj = new JSONObject(response);
 
                             aboutMessage = obj.getString("");
-
-                            Log.d("Message: ", aboutMessage);
-
-                            Log.d("String", aboutMessage);
-
-                            //array.add(message);
                         }
                         catch (JSONException e) {
                             Log.e("Volley", "Error "+e);
@@ -77,20 +76,9 @@ public class Connection extends Thread{
                         try {
                             JSONObject obj = new JSONObject(response);
 
-                            String description = obj.getString("Description:");
-                            String groupname = obj.getString("Group name:");
+                            description = obj.getString("description");
+                            groupname = obj.getString("name");
 
-
-
-                            Log.d("groupname: ", groupname);
-                            Log.d("description: ", description);
-
-                            //bundle.putString("groupname",groupname);
-                            //bundle.putString("description", description);
-                            //bundle.putString("groups", response);
-                            //array = new String[]{groupname, description};
-                            //array.add(groupname);
-                            //array.add(description);
                         }
                         catch (JSONException e) {
                             Log.e("Volley", "Error "+e);
@@ -106,7 +94,7 @@ public class Connection extends Thread{
                 }
         );
 
-        StringRequest profileRequest = new StringRequest(Request.Method.GET, JsonURL+"user",
+        StringRequest profileRequest = new StringRequest(Request.Method.GET, JsonURL+"user/10",
 
                 new Response.Listener<String>() {
 
@@ -116,16 +104,9 @@ public class Connection extends Thread{
                         try {
                             JSONObject obj = new JSONObject(response);
 
-                            String username = obj.getString("username:");
-                            String email = obj.getString("email:");
+                            username = obj.getString("username");
+                            email = obj.getString("email");
 
-                            Log.d("Username: ", username);
-                            Log.d("Email: ", email);
-
-                            //bundle.putString("username",username);
-                            //bundle.putString("email", email);
-                            //array.add(username);
-                            //array.add(email);
                         }
                         catch (JSONException e) {
                             Log.e("Volley", "Error "+e);
@@ -152,32 +133,26 @@ public class Connection extends Thread{
     public static void login(){
         //TODO
     }
-    public ArrayList<String> getGroups(){
-        array.removeAll(array);
 
+    public ArrayList<String> getGroups(){
+        array = new ArrayList<>();
+        array.add(groupname);
+        array.add(description);
 
         return array;
     }
 
     public synchronized ArrayList<String> getAbout(){
-        //array.removeAll(array);
-        //RequestFuture<String> future = RequestFuture.newFuture();
         array = new ArrayList<>();
         array.add(aboutMessage);
-        Log.d("Array",array.toString());
         return array;
     }
 
     public ArrayList<String> getProfile(){
-        array.removeAll(array);
-
-
+        array= new ArrayList<>();
+        array.add(username);
+        array.add(email);
         return array;
     }
 
-    private synchronized ArrayList<String> getArray(StringRequest  request){
-        requestQueue.add(request);
-        Log.d("array", array.toString());
-        return array;
-    }
 }
