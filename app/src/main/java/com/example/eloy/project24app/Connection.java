@@ -7,6 +7,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.RequestFuture;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -15,24 +16,57 @@ import org.json.JSONObject;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by Eloy on 7-7-2017.
  */
 
-public abstract class Connection {
+public class Connection extends Thread{
     private static String JsonURL = "http://10.0.2.2:5000/";
     private static RequestQueue requestQueue;
-    private static ArrayList<String> array = new ArrayList<>();
+    private static ArrayList<String> array;
+    private static String aboutMessage;
 
-    public static void getContext(Context context){
+    public Connection(Context context){
         requestQueue = Volley.newRequestQueue(context);
-    }
-    public static void login(){
-        //TODO
-    }
-    public static ArrayList<String> getGroups(){
-        array.removeAll(array);
+
+        final StringRequest aboutRequest = new StringRequest(Request.Method.GET, JsonURL+"about",
+
+                new Response.Listener<String>() {
+
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d("Response", response);
+                        try {
+                            JSONObject obj = new JSONObject(response);
+
+                            aboutMessage = obj.getString("");
+
+                            Log.d("Message: ", aboutMessage);
+
+                            Log.d("String", aboutMessage);
+
+                            //array.add(message);
+                        }
+                        catch (JSONException e) {
+                            Log.e("Volley", "Error "+e);
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("Volley", "Error: " + error);
+                    }
+                }
+        );
+
         StringRequest groupsRequest = new StringRequest(Request.Method.GET, JsonURL+"groups/10",
 
                 new Response.Listener<String>() {
@@ -55,8 +89,8 @@ public abstract class Connection {
                             //bundle.putString("description", description);
                             //bundle.putString("groups", response);
                             //array = new String[]{groupname, description};
-                            array.add(groupname);
-                            array.add(description);
+                            //array.add(groupname);
+                            //array.add(description);
                         }
                         catch (JSONException e) {
                             Log.e("Volley", "Error "+e);
@@ -71,49 +105,7 @@ public abstract class Connection {
                     }
                 }
         );
-        requestQueue.add(groupsRequest);
-        return array;
-    }
 
-    public static ArrayList<String> getAbout(){
-        array.removeAll(array);
-        StringRequest aboutRequest = new StringRequest(Request.Method.GET, JsonURL+"about",
-
-                new Response.Listener<String>() {
-
-                    @Override
-                    public void onResponse(String response) {
-                        Log.d("Response", response);
-                        try {
-                            JSONObject obj = new JSONObject(response);
-
-                            String message = obj.getString("");
-
-                            Log.d("Message: ", message);
-
-                            Log.d("String", message);
-
-                            array.add(message);
-                        }
-                        catch (JSONException e) {
-                            Log.e("Volley", "Error "+e);
-                        }
-                    }
-                },
-
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError e) {
-                        Log.e("Volley", "Error"+ e);
-                    }
-                }
-        );
-        requestQueue.add(aboutRequest);
-        return array;
-    }
-
-    public static ArrayList<String> getProfile(){
-        array.removeAll(array);
         StringRequest profileRequest = new StringRequest(Request.Method.GET, JsonURL+"user",
 
                 new Response.Listener<String>() {
@@ -132,8 +124,8 @@ public abstract class Connection {
 
                             //bundle.putString("username",username);
                             //bundle.putString("email", email);
-                            array.add(username);
-                            array.add(email);
+                            //array.add(username);
+                            //array.add(email);
                         }
                         catch (JSONException e) {
                             Log.e("Volley", "Error "+e);
@@ -148,7 +140,44 @@ public abstract class Connection {
                     }
                 }
         );
+
+        requestQueue.add(groupsRequest);
+        requestQueue.add(aboutRequest);
         requestQueue.add(profileRequest);
+
+
+    }
+
+
+    public static void login(){
+        //TODO
+    }
+    public ArrayList<String> getGroups(){
+        array.removeAll(array);
+
+
+        return array;
+    }
+
+    public synchronized ArrayList<String> getAbout(){
+        //array.removeAll(array);
+        //RequestFuture<String> future = RequestFuture.newFuture();
+        array = new ArrayList<>();
+        array.add(aboutMessage);
+        Log.d("Array",array.toString());
+        return array;
+    }
+
+    public ArrayList<String> getProfile(){
+        array.removeAll(array);
+
+
+        return array;
+    }
+
+    private synchronized ArrayList<String> getArray(StringRequest  request){
+        requestQueue.add(request);
+        Log.d("array", array.toString());
         return array;
     }
 }

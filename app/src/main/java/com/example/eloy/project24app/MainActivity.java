@@ -32,7 +32,7 @@ import org.json.JSONObject;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    TextView results;
+    Connection connection;
     Bundle bundle = new Bundle();
 
     GroupsFragment groupsFragment = new GroupsFragment();
@@ -42,10 +42,9 @@ public class MainActivity extends AppCompatActivity
     android.app.FragmentManager fragmanager = getFragmentManager();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        connection = new Connection(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        Connection.getContext(this);
 
         //StringRequest voor de about pagina
 
@@ -123,16 +122,16 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_groups_layout) {
-            bundle.putStringArrayList("groups",Connection.getGroups());
+            bundle.putStringArrayList("groups",connection.getGroups());
             Log.d("Bundel waarde", bundle.toString());
             groupsFragment.setArguments(bundle);
             fragmanager.beginTransaction().replace(R.id.content_frame, groupsFragment).commit();
         } else if (id == R.id.nav_profile_layout) {
-            bundle.putStringArrayList("profile",Connection.getProfile());
+            bundle.putStringArrayList("profile",connection.getProfile());
             fragmanager.beginTransaction().replace(R.id.content_frame, profileFragment).commit();
             profileFragment.setArguments(bundle);
         } else if (id == R.id.nav_about_layout) {
-            bundle.putStringArrayList("about",Connection.getAbout());
+            bundle.putStringArrayList("about",connection.getAbout());
             aboutFragment.setArguments(bundle);
             fragmanager.beginTransaction().replace(R.id.content_frame, aboutFragment).commit();
         }
